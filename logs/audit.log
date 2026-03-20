@@ -1,0 +1,12 @@
+[2026-03-05 03:48:20] [AUTH] [Guest] LOGIN_INVALID | user_id=— | user#— | ::1 | email=Kyrie_Irving@gmail.com | /itdbadm/login.php
+[2026-03-05 04:04:37] [AUTH] [Customer] LOGIN_SUCCESS | user_id=8 | user#8 | ::1 | email=mike_malone@gmail.com | /itdbadm/login.php
+[2026-03-05 04:05:09] [AUTH] [Customer] LOGIN_SUCCESS | user_id=8 | user#8 | ::1 | email=mike_malone@gmail.com | /itdbadm/login.php
+[2026-03-05 04:32:05] [TRANSACTION] [Customer] ORDER_PLACE | user_id=8 | order#612 | ::1 | total=4750 | /itdbadm/process_payment.php
+[2026-03-05 04:41:13] [AUTH] [Customer] LOGIN_SUCCESS | user_id=8 | user#8 | ::1 | email=mike_malone@gmail.com | /itdbadm/login.php
+[2026-03-05 04:43:47] [AUTH] [Customer] LOGIN_SUCCESS | user_id=8 | user#8 | ::1 | email=mike_malone@gmail.com | /itdbadm/login.php
+[2026-03-05 04:45:12] [AUTH] [Customer] LOGIN_SUCCESS | user_id=8 | user#8 | ::1 | email=mike_malone@gmail.com | /itdbadm/login.php
+[2026-03-05 04:46:34] [AUTH] [Admin] LOGIN_SUCCESS_MFA | user_id=9 | user#9 | ::1 | /itdbadm/login-admin.php
+[2026-03-05 04:47:38] [ADMIN] [Admin] ORDER_STATUS_UPDATE | user_id=9 | order#600 | ::1 | status=Delivered | /itdbadm/admin-orders.php
+[2026-03-05 04:47:40] [ADMIN] [Admin] ORDER_STATUS_UPDATE | user_id=9 | order#601 | ::1 | status=Delivered | /itdbadm/admin-orders.php
+[2026-03-05 04:47:46] [ADMIN] [Admin] ORDER_STATUS_UPDATE | user_id=9 | order#600 | ::1 | status=Cancelled | /itdbadm/admin-orders.php
+[2026-03-05 04:47:48] [ADMIN] [Admin] ORDER_STATUS_UPDATE | user_id=9 | order#600 | ::1 | status=Delivered | /itdbadm/admin-orders.php

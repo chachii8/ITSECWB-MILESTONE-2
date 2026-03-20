@@ -1,0 +1,365 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: hsl(0, 0%, 97%);
+    color: hsl(0, 0%, 7%);
+    min-height: 100vh;
+  }
+  
+  /* Hover Info (shared with homepage) */
+  .profile-hover-info {
+    display: none;
+    position: absolute;
+    top: 45px;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid hsl(0, 0%, 80%);
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    font-size: 13px;
+    z-index: 100;
+  }
+  
+  .user-profile-container:hover .profile-hover-info {
+    display: block;
+  }
+
+  .user-profile-container {
+    position: relative;
+  }  
+  
+  .profile-hover-info .user-name {
+    font-weight: 600;
+    color: hsl(0, 0%, 7%);
+  }
+  
+  .profile-hover-info .user-role {
+    font-size: 12px;
+    color: hsl(0, 0%, 40%);
+  }
+  
+  /* Layout */
+  .user-profile-page {
+    display: flex;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 24px;
+    gap: 40px;
+  }
+  
+  /* Sidebar */
+  .profile-sidebar {
+    width: 300px;
+    background-color: #fff;
+    border: 1px solid hsl(0, 0%, 80%);
+    padding: 24px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  .profile-picture {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 16px;
+    border: 2px solid hsl(0, 0%, 80%);
+  }
+  
+  .upload-btn {
+    margin-top: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: hsl(0, 0%, 40%);
+  }
+  
+  .profile-info {
+    text-align: left;
+    margin-top: 24px;
+    font-size: 14px;
+  }
+  
+  .profile-info p {
+    margin-bottom: 12px;
+  }
+  
+  .profile-info strong {
+    display: inline-block;
+    width: 70px;
+    color: hsl(0, 0%, 40%);
+  }
+  
+  /* Buttons */
+  .profile-buttons {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .profile-buttons button {
+    padding: 10px;
+    font-size: 14px;
+    background-color: hsl(0, 0%, 20%);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .profile-buttons button:hover {
+    background-color: hsl(0, 0%, 30%);
+  }
+  
+  /* Main Profile Content */
+  .profile-main {
+    flex: 1;
+  }
+  
+  .profile-main h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 600;
+    color: hsl(0, 0%, 7%);
+  }
+  
+  .profile-section {
+    background-color: #fff;
+    border: 1px solid hsl(0, 0%, 80%);
+    padding: 24px;
+    border-radius: 8px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  .profile-section h3 {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 500;
+    border-bottom: 1px solid hsl(0, 0%, 80%);
+    padding-bottom: 8px;
+    color: hsl(0, 0%, 7%);
+  }
+  
+  .profile-section p {
+    font-size: 14px;
+    color: hsl(0, 0%, 40%);
+  }
+  
+
+/* Rating & Reviews */
+.order-item {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.order-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid hsl(0, 0%, 80%);
+}
+
+.order-details {
+  flex: 1;
+  font-size: 14px;
+  color: hsl(0, 0%, 20%);
+}
+
+.order-details p {
+  margin-bottom: 6px;
+}
+
+a.rate-btn, .rate-btn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  background-color: hsl(0, 0%, 20%);
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.rate-btn:hover {
+  background-color: hsl(0, 0%, 30%);
+}
+
+/* Review Form (for reviews.jsp, reused style) */
+.review-container {
+  max-width: 600px;
+  margin: 80px auto;
+  background: white;
+  padding: 32px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.review-container h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.review-container label {
+  display: block;
+  font-weight: 500;
+  margin: 10px 0 6px;
+}
+
+.review-container textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  resize: vertical;
+  font-size: 14px;
+}
+
+.review-container button[type="submit"] {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background-color: hsl(0, 0%, 20%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.review-container button[type="submit"]:hover {
+  background-color: hsl(0, 0%, 30%);
+}
+
+/* Star Rating */
+.stars {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  gap: 4px;
+}
+
+.stars input {
+  display: none;
+}
+
+.stars label {
+  font-size: 24px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.stars input:checked ~ label,
+.stars label:hover,
+.stars label:hover ~ label {
+  color: #f5b301;
+}
+
+.review-item {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid hsl(0, 0%, 90%);
+}
+
+.first-review {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+
+.review-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid hsl(0, 0%, 80%);
+}
+
+.review-details {
+  flex: 1;
+}
+
+.review-product-name {
+  font-weight: 600;
+  color: hsl(0, 0%, 10%);
+  margin-bottom: 6px;
+}
+
+.review-stars {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.review-stars i {
+  color: #ccc;
+  font-size: 16px;
+}
+
+.review-stars .filled {
+  color: #f5b301;
+}
+
+.review-comment {
+  font-size: 14px;
+  color: hsl(0, 0%, 35%);
+}
+
+/* Favorite Items */
+
+.favorite-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.favorite-item img {
+  width: 100px;
+  height: auto;
+  margin-right: 15px;
+}
+
+.favorite-item .order-details {
+  flex-grow: 1;
+}
+
+.remove-btn {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  background-color: hsl(0, 0%, 20%);
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.remove-btn:hover {
+  background-color: hsl(0, 0%, 30%);
+}
+
+p {
+  margin-bottom: 10px;
+}

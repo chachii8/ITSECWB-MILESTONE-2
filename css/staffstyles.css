@@ -1,0 +1,290 @@
+/* Page Layout */
+.staff-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 24px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.card {
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+  }
+  
+  .card-grid .card {
+    flex: 1 1 calc(33.33% - 20px); /* 3 cards per row, subtracting gap */
+    min-width: 260px; /* fallback for narrow screens */
+    box-sizing: border-box;
+  }  
+
+.profile-hover-info {
+    display: none;
+    position: absolute;
+    top: 45px;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid hsl(0, 0%, 80%);
+    padding: 8px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    font-size: 13px;
+    z-index: 100;
+    color: #333;
+}
+
+.user-profile-container {
+    position: relative;
+}
+
+.user-profile-container:hover .profile-hover-info {
+    display: block;
+}
+
+.profile-hover-info .user-name {
+    font-weight: 600;
+}
+
+.profile-hover-info .user-role {
+    font-size: 12px;
+    color: hsl(0, 0%, 40%);
+}
+
+.card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: hsl(0, 0%, 20%);
+}
+
+.card-actions {
+    margin-top: 12px;
+}
+
+.action-btn {
+    padding: 10px 18px;
+    background-color: hsl(0, 0%, 20%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.action-btn:hover {
+    background-color: hsl(0, 0%, 30%);
+}
+
+/* Orders to Process Page */
+.order-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.order-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.order-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid hsl(0, 0%, 80%);
+}
+
+.order-details p {
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: hsl(0, 0%, 20%);
+}
+
+/* Update Stocks Page */
+.stock-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.stock-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    font-size: 14px;
+    color: #444;
+}
+
+.stock-info input[type="number"] {
+    width: 60px;
+    padding: 6px;
+    margin-top: 4px;
+    font-size: 14px;
+}
+
+/* Staff Profile Page */
+.staff-profile-page {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 24px;
+  }
+  
+  .staff-profile-card {
+    background-color: #fff;
+    border: 1px solid hsl(0, 0%, 80%);
+    padding: 32px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  .staff-profile-picture {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid hsl(0, 0%, 80%);
+    margin-bottom: 20px;
+  }
+  
+  .staff-profile-info {
+    margin-top: 20px;
+    font-size: 14px;
+  }
+  
+  .staff-profile-info p {
+    margin-bottom: 12px;
+  }
+  
+  .staff-profile-info strong {
+    color: hsl(0, 0%, 40%);
+    margin-right: 8px;
+  }
+
+  .profile-heading {
+    font-size: 24px;
+    font-weight: 600;
+    color: hsl(0, 0%, 7%);
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .upload-btn {
+    margin-top: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    color: hsl(0, 0%, 40%);
+  }
+  
+  .profile-main h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 600;
+    color: hsl(0, 0%, 7%);
+    align-items: center;
+  }
+
+  /* Add Item */
+  .add-item-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .add-item-form label {
+    font-weight: 500;
+    font-size: 14px;
+    color: hsl(0, 0%, 20%);
+  }
+  
+  .add-item-form input[type="text"],
+  .add-item-form input[type="number"],
+  .add-item-form select,
+  .add-item-form textarea,
+  .add-item-form input[type="file"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* View Accounts */
+.account-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .account-card {
+    flex: 1 1 calc(33.333% - 20px);
+    min-width: 250px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .account-card p {
+    margin: 6px 0;
+  }
+
+  .profile-buttons {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center; 
+    gap: 10px;
+  }
+  
+  .profile-buttons button {
+    padding: 10px;
+    font-size: 14px;
+    background-color: hsl(0, 0%, 20%);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .profile-buttons button:hover {
+    background-color: hsl(0, 0%, 30%);
+  }
