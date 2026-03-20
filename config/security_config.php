@@ -40,9 +40,9 @@ define('MFA_OPTIONAL_FOR_CUSTOMER', false);
 define('CAPTCHA_AFTER_FAILED_ATTEMPTS', 1);
 
 // Google reCAPTCHA v2: get keys at https://www.google.com/recaptcha/admin
-// Leave both empty to use built-in math CAPTCHA (works offline)
-define('RECAPTCHA_SITE_KEY', '6LcvgWQsAAAAAJDc_OxeOSU_nkNIOkMBJYh-Lk0E');
-define('RECAPTCHA_SECRET_KEY', '6LcvgWQsAAAAAJ0j9HfFiZ8W2b44zGslCMaS_-o0');
+// Use env vars on Render; leave empty to use built-in math CAPTCHA (works offline)
+define('RECAPTCHA_SITE_KEY', getenv('RECAPTCHA_SITE_KEY') ?: '6LcvgWQsAAAAAJDc_OxeOSU_nkNIOkMBJYh-Lk0E');
+define('RECAPTCHA_SECRET_KEY', getenv('RECAPTCHA_SECRET_KEY') ?: '6LcvgWQsAAAAAJ0j9HfFiZ8W2b44zGslCMaS_-o0');
 
 // Audit log: syslog integration - send logs to another system
 // Set to true to use PHP syslog() (sends to local syslog daemon; daemon can forward to remote)

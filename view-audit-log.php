@@ -1,6 +1,5 @@
 <?php
-$conn = mysqli_connect("localhost", "root", "") or die("Unable to connect!" . mysqli_connect_error());
-mysqli_select_db($conn, "sole_source");
+require_once 'includes/db.php';
 require_once 'includes/session_init.php';
 require_once 'includes/no_cache_headers.php';
 require_once 'includes/input_validation.php';

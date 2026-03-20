@@ -3,7 +3,7 @@
     require_once 'includes/session_timeout.php';
     require_once 'includes/csrf.php';
     enforce_session_timeout(true);
-    $conn = mysqli_connect("localhost", "root", "", "sole_source");
+    require_once 'includes/db.php';
 
     if (!isset($_SESSION["user_id"]) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
         echo json_encode(["status" => "error", "message" => "Unauthorized"]);

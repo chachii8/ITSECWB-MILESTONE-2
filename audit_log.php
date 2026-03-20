@@ -29,8 +29,9 @@ function log_audit($conn, $user_id, $role, $action, $entity_type, $entity_id, $d
         }
     }
 
-    // Database logging
-    $audit_conn = @mysqli_connect("localhost", "root", "", "sole_source");
+    // Database logging - use dedicated connection to avoid "Commands out of sync"
+    require_once __DIR__ . '/db.php';
+    $audit_conn = get_db_connection();
     if ($audit_conn) {
         static $has_category = null;
         if ($has_category === null) {
