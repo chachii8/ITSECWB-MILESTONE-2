@@ -26,6 +26,23 @@ require_once 'includes/db.php';
 
     $product_id = intval($_GET['product_id']);
     $order_id = intval($_GET['order_id']);
+    $order_owns = false;
+
+    // Verify order belongs to current user and contains this product (prevents IDOR)
+    $stmt_own = mysqli_prepare($conn, "
+        SELECT 1 FROM `order` o
+        JOIN order_details od ON o.order_id = od.order_id AND od.product_id = ?
+        WHERE o.order_id = ? AND o.user_id = ?
+        LIMIT 1
+    ");
+    mysqli_stmt_bind_param($stmt_own, "iii", $product_id, $order_id, $user_id);
+    mysqli_stmt_execute($stmt_own);
+    $own_result = mysqli_stmt_get_result($stmt_own);
+    $order_owns = $own_result && mysqli_num_rows($own_result) > 0;
+    mysqli_stmt_close($stmt_own);
+    if (!$order_owns) {
+        $error = "Order not found or you do not have permission to review this item.";
+    }
 
     // Fetch product name
     $stmt_product = mysqli_prepare($conn, "SELECT name FROM product WHERE product_id = ?");
@@ -50,6 +67,8 @@ require_once 'includes/db.php';
 
         if ($rating < 1 || $rating > 5 || empty($comment)) {
             $error = "Please provide a valid rating and comment.";
+        } elseif (!$order_owns) {
+            $error = "Order not found or you do not have permission to review this item.";
         } else {
             // Prevent duplicate review per purchase (user_id + order_id + product_id)
             $stmt_check = $conn->prepare("

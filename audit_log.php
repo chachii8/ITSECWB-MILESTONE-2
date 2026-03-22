@@ -30,7 +30,7 @@ function log_audit($conn, $user_id, $role, $action, $entity_type, $entity_id, $d
     }
 
     // Database logging - use dedicated connection to avoid "Commands out of sync"
-    require_once __DIR__ . '/db.php';
+    require_once __DIR__ . '/includes/db.php';
     $audit_conn = get_db_connection();
     if ($audit_conn) {
         static $has_category = null;
