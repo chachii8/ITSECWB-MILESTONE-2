@@ -278,8 +278,8 @@ require_once 'includes/db.php';
                                 $product_id = (int)$order['product_id'];
                                 mysqli_stmt_bind_param($stmt_review_check, "ii", $user_id, $product_id);
                                 mysqli_stmt_execute($stmt_review_check);
-                                $review_result = mysqli_stmt_get_result($stmt_review_check);
-                                $has_reviewed = mysqli_num_rows($review_result) > 0;
+                                $review_check_result = mysqli_stmt_get_result($stmt_review_check);
+                                $has_reviewed = mysqli_num_rows($review_check_result) > 0;
                                 if (!$has_reviewed && $order['order_status'] === 'Delivered') {
                                     echo "<a href='reviews.php?product_id={$order['product_id']}&order_id={$order['order_id']}'>Rate this Product</a>";
                                 } elseif ($has_reviewed) {
