@@ -30,6 +30,28 @@ function validate_int_range($value, $min, $max) {
     return $v;
 }
 
+/**
+ * Stock quantity: whole number only (no decimals), 0–1000 by default.
+ * Rejects strings like "10.5" or "1e2" so values are never silently truncated.
+ */
+function validate_stock_integer($value, int $min = 0, int $max = 1000) {
+    $s = trim((string) $value);
+    if ($s === '') {
+        return false;
+    }
+    if (str_contains($s, '.') || str_contains($s, ',') || stripos($s, 'e') !== false) {
+        return false;
+    }
+    if (!ctype_digit($s)) {
+        return false;
+    }
+    $v = (int) $s;
+    if ($v < $min || $v > $max) {
+        return false;
+    }
+    return $v;
+}
+
 /** Validate order status. */
 function validate_order_status($status) {
     return in_array($status, ['Pending', 'Shipped', 'Delivered', 'Cancelled'], true);
@@ -64,5 +86,20 @@ function validate_size($value) {
     if (!is_numeric($value)) return false;
     $v = (float)$value;
     if ($v < 1 || $v > 20) return false;
+    return $v;
+}
+
+/**
+ * Normalize shoe size to half-step (e.g. 6, 6.5) and validate range for add-product form.
+ * Returns normalized float or false.
+ */
+function validate_size_add_product($value, float $min = 3.0, float $max = 15.0) {
+    if (!is_numeric($value)) {
+        return false;
+    }
+    $v = round((float) $value * 2) / 2;
+    if ($v < $min || $v > $max) {
+        return false;
+    }
     return $v;
 }

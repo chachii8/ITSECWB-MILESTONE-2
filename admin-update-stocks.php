@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id']) && isse
     } else {
     $product_id = validate_int_range($_POST['product_id'] ?? 0, 1, 999999);
     $size_raw = $_POST['size'] ?? '';
-    $new_stock = validate_int_range($_POST['stock'] ?? 0, 0, 1000);
+    $new_stock = validate_stock_integer($_POST['stock'] ?? '', 0, 1000);
 
     $size = validate_size($size_raw);
     if ($size !== false) $size = (string)$size;
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id']) && isse
             mysqli_stmt_close($stmt_update);
         }
     } else {
-        $message = "Invalid product, size, or stock (0-1000).";
+        $message = "Invalid product, size, or stock. Use a whole number from 0 to 1000 (no decimals).";
     }
     }
 }
@@ -245,7 +245,7 @@ while ($sizeRow = mysqli_fetch_assoc($sizeResult)) {
                   <br>
               <!-- Input for new stock -->
               <label for="stock_<?php echo $row['product_id']; ?>"><strong> New Stock:</strong></label>
-              <input type="number" id="stock_<?php echo $row['product_id']; ?>" name="stock" min="0" max="1000" value="0" required>
+              <input type="number" id="stock_<?php echo $row['product_id']; ?>" name="stock" min="0" max="1000" step="1" inputmode="numeric" pattern="[0-9]*" value="0" required title="Whole number 0–1000">
 
               <button class="action-btn" type="submit">Update Stock</button>
             </form>

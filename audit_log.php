@@ -16,7 +16,7 @@ function log_audit($conn, $user_id, $role, $action, $entity_type, $entity_id, $d
 
     // Auto-detect category from action if not provided
     if ($category === null) {
-        if (preg_match('/^(LOGIN_|MFA_)/', $action)) {
+        if (preg_match('/^(LOGIN_|MFA_|LOGOUT)/', $action)) {
             $category = 'AUTH';
         } elseif (preg_match('/^ORDER_PLACE|^ORDER_CREATE/', $action)) {
             $category = 'TRANSACTION';

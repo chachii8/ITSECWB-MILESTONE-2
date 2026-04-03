@@ -29,11 +29,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $errorMessage = "";
     $valid = true;
 
-    // Validate price: 1 to 999999.99
+    // Validate price: positive only — not negative, not zero; min ₱1
+    $price_trim = trim((string) $price_raw);
     $price = validate_price($price_raw, 1, 999999.99);
     if ($price === false) {
         $valid = false;
-        $errorMessage .= "Price must be between 1 and 999999.99.<br>";
+        if ($price_trim !== '' && is_numeric($price_trim) && (float) $price_trim < 0) {
+            $errorMessage .= "Price cannot be negative.<br>";
+        } else {
+            $errorMessage .= "Price must be between 1.00 and 999999.99 (positive amount, not zero).<br>";
+        }
     }
 
     // Validate brand_id and currency_id exist
@@ -46,24 +51,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $errorMessage .= "Invalid currency.<br>";
     }
 
-    // Validate sizes (e.g. 6, 6.5, 7)
+    // Validate sizes: 3–15 inclusive, half sizes OK, no duplicates
     $sizes = [];
+    $seen_keys = [];
     foreach ($sizes_raw as $s) {
         $s = trim($s);
-        if ($s !== '') {
-            $v = validate_size($s);
-            if ($v !== false) $sizes[] = (string)$v;
+        if ($s === '') {
+            continue;
         }
+        $v = validate_size_add_product($s);
+        if ($v === false) {
+            $valid = false;
+            $errorMessage .= "Each size must be a number between 3 and 15 (e.g. 6, 6.5, 10).<br>";
+            continue;
+        }
+        $key = sprintf('%.1f', $v);
+        if (isset($seen_keys[$key])) {
+            $valid = false;
+            $errorMessage .= "Duplicate size: {$key}. Remove duplicates.<br>";
+            continue;
+        }
+        $seen_keys[$key] = true;
+        $sizes[] = (string) $v;
     }
     if (empty($sizes)) {
         $valid = false;
-        $errorMessage .= "At least one valid size (e.g. 6, 6.5, 7) is required.<br>";
+        $errorMessage .= "Enter at least one size between 3 and 15 (comma-separated, e.g. 6, 7, 8).<br>";
     }
 
     // Validate initial stock: 0 to 1000 (per size)
     if ($stock < 0 || $stock > 1000) {
         $valid = false;
-        $errorMessage .= "Initial stock cannot be negative.<br>";
+        $errorMessage .= "Initial stock must be between 0 and 1000 per size.<br>";
     }
 
     if ($valid) {
@@ -234,8 +253,8 @@ $currencyResult = mysqli_query($conn, $currencyQuery);
         ?>
       </select>
       <label for="price">Price (₱)</label>
-      <input type="number" id="price" name="price" step="0.01" min="1" required>
-      <small id="price-error" class="field-error" style="display:none;">Price must be at least 1.</small>
+      <input type="number" id="price" name="price" step="0.01" min="1" max="999999.99" required title="Minimum ₱1.00; cannot be negative or zero">
+      <small id="price-error" class="field-error" style="display:none;"></small>
       <label for="color">Color</label>
       <input type="text" id="color" name="color" required>
       <label for="description">Description</label>
@@ -251,10 +270,12 @@ $currencyResult = mysqli_query($conn, $currencyQuery);
         ?>
       </select>
       <label for="sizes">Available Sizes (comma-separated)</label>
-      <input type="text" id="sizes" name="sizes" placeholder="e.g. 6, 7, 8, 9, 10" required>
+      <input type="text" id="sizes" name="sizes" placeholder="e.g. 6, 6.5, 7, 8" required autocomplete="off">
+      <small id="sizes-error" class="field-error" style="display:none;"></small>
+      <small style="display:block;color:#555;font-size:12px;margin-top:4px;">Each size must be between <strong>3</strong> and <strong>15</strong> (half sizes like 6.5 allowed). No duplicate sizes.</small>
       <label for="stock">Initial Stock (per size)</label>
-      <input type="number" id="stock" name="stock" required>
-      <small id="stock-error" class="field-error" style="display:none;">Initial stock cannot be negative.</small>
+      <input type="number" id="stock" name="stock" min="0" max="1000" step="1" required>
+      <small id="stock-error" class="field-error" style="display:none;"></small>
       <label for="image">Upload Image</label>
       <input type="file" id="image" name="image" accept="image/*" required>
       <button type="submit" class="action-btn">➕ Add Product</button>
@@ -285,15 +306,25 @@ $currencyResult = mysqli_query($conn, $currencyQuery);
     var priceError = document.getElementById('price-error');
     var stockInput = document.getElementById('stock');
     var stockError = document.getElementById('stock-error');
+    var sizesInput = document.getElementById('sizes');
+    var sizesError = document.getElementById('sizes-error');
+    var SIZE_MIN = 3;
+    var SIZE_MAX = 15;
 
     function validatePriceField() {
       if (!priceInput || !priceError) return;
       var val = parseFloat(priceInput.value);
-      if (!isNaN(val) && val < 1) {
+      if (!isNaN(val) && val < 0) {
         priceError.style.display = 'block';
-        priceInput.setCustomValidity('Price must be at least 1.');
+        priceError.textContent = 'Price cannot be negative.';
+        priceInput.setCustomValidity('Price cannot be negative.');
+      } else if (!isNaN(val) && val >= 0 && val < 1) {
+        priceError.style.display = 'block';
+        priceError.textContent = 'Price must be at least 1.00.';
+        priceInput.setCustomValidity('Price must be at least 1.00.');
       } else {
         priceError.style.display = 'none';
+        priceError.textContent = '';
         priceInput.setCustomValidity('');
       }
     }
@@ -301,13 +332,58 @@ $currencyResult = mysqli_query($conn, $currencyQuery);
     function validateStockField() {
       if (!stockInput || !stockError) return;
       var val = parseInt(stockInput.value, 10);
-      if (!isNaN(val) && (val < 0 || val > 1000)) {
+      if (isNaN(val) || val < 0 || val > 1000) {
         stockError.style.display = 'block';
-        stockInput.setCustomValidity('Initial stock cannot be negative.');
+        stockError.textContent = 'Initial stock must be between 0 and 1000.';
+        stockInput.setCustomValidity('Stock must be between 0 and 1000.');
       } else {
         stockError.style.display = 'none';
+        stockError.textContent = '';
         stockInput.setCustomValidity('');
       }
+    }
+
+    function parseSizes(str) {
+      return str.split(',').map(function (x) { return x.trim(); }).filter(function (x) { return x.length > 0; });
+    }
+
+    function validateSizesField() {
+      if (!sizesInput || !sizesError) return;
+      var parts = parseSizes(sizesInput.value);
+      if (parts.length === 0) {
+        sizesError.style.display = 'block';
+        sizesError.textContent = 'Enter at least one size between ' + SIZE_MIN + ' and ' + SIZE_MAX + '.';
+        sizesInput.setCustomValidity(sizesError.textContent);
+        return;
+      }
+      var seen = {};
+      for (var i = 0; i < parts.length; i++) {
+        var n = parseFloat(parts[i]);
+        if (isNaN(n)) {
+          sizesError.style.display = 'block';
+          sizesError.textContent = 'Invalid number: ' + parts[i];
+          sizesInput.setCustomValidity(sizesError.textContent);
+          return;
+        }
+        var half = Math.round(n * 2) / 2;
+        if (half < SIZE_MIN || half > SIZE_MAX) {
+          sizesError.style.display = 'block';
+          sizesError.textContent = 'Each size must be between ' + SIZE_MIN + ' and ' + SIZE_MAX + ' (got ' + half + ').';
+          sizesInput.setCustomValidity(sizesError.textContent);
+          return;
+        }
+        var key = half.toFixed(1);
+        if (seen[key]) {
+          sizesError.style.display = 'block';
+          sizesError.textContent = 'Duplicate size: ' + key + '. Remove duplicates.';
+          sizesInput.setCustomValidity(sizesError.textContent);
+          return;
+        }
+        seen[key] = true;
+      }
+      sizesError.style.display = 'none';
+      sizesError.textContent = '';
+      sizesInput.setCustomValidity('');
     }
 
     if (priceInput && priceError) {
@@ -318,6 +394,20 @@ $currencyResult = mysqli_query($conn, $currencyQuery);
     if (stockInput && stockError) {
       stockInput.addEventListener('input', validateStockField);
       stockInput.addEventListener('blur', validateStockField);
+    }
+
+    if (sizesInput && sizesError) {
+      sizesInput.addEventListener('input', validateSizesField);
+      sizesInput.addEventListener('blur', validateSizesField);
+    }
+
+    var form = document.querySelector('.add-item-form');
+    if (form) {
+      form.addEventListener('submit', function () {
+        validatePriceField();
+        validateSizesField();
+        validateStockField();
+      });
     }
   })();
 </script>
