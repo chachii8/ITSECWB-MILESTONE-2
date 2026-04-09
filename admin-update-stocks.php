@@ -57,10 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id']) && isse
     }
 }
 
-// Fetch all products (with brand name and size/stock info)
-$productQuery = "SELECT p.product_id, p.name AS product_name, p.image_url, b.name AS brand_name
+// All products (LEFT JOIN so orphan brand_id still lists; ORDER BY for stable UI)
+$productQuery = "SELECT p.product_id, p.name AS product_name, p.image_url,
+                        COALESCE(b.name, '—') AS brand_name
                  FROM product p
-                 JOIN brand b ON p.brand_id = b.brand_id";
+                 LEFT JOIN brand b ON p.brand_id = b.brand_id
+                 ORDER BY p.name ASC";
 $productResult = mysqli_query($conn, $productQuery);
 
 // Fetch sizes and current stock for each product
@@ -231,6 +233,8 @@ while ($sizeRow = mysqli_fetch_assoc($sizeResult)) {
             <p><strong>Product:</strong> <?php echo htmlspecialchars($row['product_name']); ?></p>
             <p><strong>Brand:</strong> <?php echo htmlspecialchars($row['brand_name']); ?></p>
 
+            <?php $product_sizes = $sizes[$row['product_id']] ?? []; ?>
+            <?php if (!empty($product_sizes)): ?>
             <!-- Dropdown for sizes -->
             <form action="admin-update-stocks.php" method="post">
               <?php echo csrf_field(); ?>
@@ -238,8 +242,8 @@ while ($sizeRow = mysqli_fetch_assoc($sizeResult)) {
 
               <label for="size_<?php echo $row['product_id']; ?>"><strong>Size:</strong></label>
               <select name="size" id="size_<?php echo $row['product_id']; ?>" required>
-                <?php foreach ($sizes[$row['product_id']] as $size): ?>
-                  <option value="<?php echo $size['size']; ?>"><?php echo $size['size']; ?> (Current Stock: <?php echo $size['stock']; ?>)</option>
+                <?php foreach ($product_sizes as $size): ?>
+                  <option value="<?php echo htmlspecialchars($size['size']); ?>"><?php echo htmlspecialchars($size['size']); ?> (Current Stock: <?php echo (int)$size['stock']; ?>)</option>
                 <?php endforeach; ?>
               </select>
                   <br>
@@ -249,6 +253,9 @@ while ($sizeRow = mysqli_fetch_assoc($sizeResult)) {
 
               <button class="action-btn" type="submit">Update Stock</button>
             </form>
+            <?php else: ?>
+              <p style="color:#666;font-size:14px;margin-top:8px;">No sizes in database for this product. Add or edit the item to create size rows.</p>
+            <?php endif; ?>
           </div>
         </div>
       <?php endwhile; ?>

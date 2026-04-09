@@ -82,24 +82,6 @@ Admin and staff protected pages now redirect to `login-admin.php` when not logge
 - Sends **`Strict-Transport-Security`** (HSTS) when HTTPS is detected (`includes/security_headers.php`).
 - Behind a **reverse proxy** (e.g. Render) that terminates TLS, set **`TRUST_PROXY_HEADERS=1`** in the environment so `HTTP_X_FORWARDED_PROTO=https` is trusted for cookie flags and HSTS.
 
-### Local / rubric: self-signed certificate (acceptable)
-
-1. **Enable SSL in Apache (XAMPP)**  
-   - Edit `httpd-ssl.conf` (paths vary; often `xamppfiles/apache/conf/extra/httpd-ssl.conf`).  
-   - Ensure `SSLCertificateFile` and `SSLCertificateKeyFile` point to your cert and key.
-
-2. **Generate a self-signed cert** (example with OpenSSL):
-
-   ```bash
-   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-     -keyout localhost.key -out localhost.crt \
-     -subj "/CN=localhost"
-   ```
-
-   Point Apache’s `SSLCertificateFile` / `SSLCertificateKeyFile` to `localhost.crt` and `localhost.key`, enable `httpd-ssl.conf` in `httpd.conf`, restart Apache, and open **`https://localhost/...`**. The browser will show a warning once; accept it for development (self-signed is acceptable for many course rubrics).
-
-3. **Access the site with `https://`** so cookies get the `Secure` flag and HSTS applies.
-
 ---
 
 ## 8. SQL Injection Protection
