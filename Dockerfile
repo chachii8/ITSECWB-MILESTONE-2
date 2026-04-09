@@ -6,6 +6,13 @@ RUN docker-php-ext-install mysqli
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
+# PHP + mod_php requires mpm_prefork. Newer base images may enable mpm_event too,
+# which causes: AH00534 "More than one MPM loaded" and crash loops.
+RUN set -eux; \
+    a2dismod mpm_event 2>/dev/null || true; \
+    a2dismod mpm_worker 2>/dev/null || true; \
+    a2enmod mpm_prefork
+
 # Copy application files
 COPY . /var/www/html/
 
