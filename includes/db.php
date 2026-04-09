@@ -14,6 +14,21 @@ function get_db_config(): array {
     ];
 }
 
+/**
+ * Database/schema name for SQL identifiers (matches DB_NAME / Aiven database).
+ * Whitelist-only; use when you need `dbname`.`table` explicitly.
+ */
+function db_database_name(): string {
+    $d = getenv('DB_NAME');
+    if ($d !== false && $d !== '') {
+        $d = trim((string) $d);
+        if (preg_match('/^[a-zA-Z0-9_]+$/', $d)) {
+            return $d;
+        }
+    }
+    return 'sole_source';
+}
+
 function db_env_flag_enabled($name) {
     $v = getenv($name);
     if ($v === false || $v === '') {

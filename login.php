@@ -82,6 +82,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     $now = new DateTime();
     $login_failure_action = null;
+    // Defaults before login_security / rate-limit queries (avoids undefined vars if SELECT returns no row)
+    $failed_count = 0;
+    $lockout_level = 0;
+    $lockout_until = null;
+    $db_schema = db_database_name();
 
     // --- CAPTCHA: Blocks bots after failed attempts ---
     if (isset($_SESSION['login_requires_captcha']) && !validate_captcha_response()) {
@@ -105,24 +110,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         VALUES (?, ?, NOW())
         ON DUPLICATE KEY UPDATE last_attempt = NOW()
     ");
-    mysqli_stmt_bind_param($stmt, "ss", $login_email, $ip_address);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
+    if (!$stmt) {
+        $login_error = "Login system error. Please try again.";
+    } else {
+        mysqli_stmt_bind_param($stmt, "ss", $login_email, $ip_address);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
 
-    // Rate limiting: check if currently locked out (escalating: 1h -> 3h -> 24h -> 1 week)
-    $stmt = mysqli_prepare($conn, "
-        SELECT failed_count, lockout_level, lockout_until
-        FROM login_security
-        WHERE email = ? AND ip_address = ?
-    ");
-    mysqli_stmt_bind_param($stmt, "ss", $login_email, $ip_address);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $failed_count, $lockout_level, $lockout_until);
-    mysqli_stmt_fetch($stmt);
-    mysqli_stmt_close($stmt);
+        $stmt = mysqli_prepare($conn, "
+            SELECT failed_count, lockout_level, lockout_until
+            FROM login_security
+            WHERE email = ? AND ip_address = ?
+        ");
+        if (!$stmt) {
+            $login_error = "Login system error. Please try again.";
+        } else {
+            mysqli_stmt_bind_param($stmt, "ss", $login_email, $ip_address);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_bind_result($stmt, $failed_count, $lockout_level, $lockout_until);
+            if (!mysqli_stmt_fetch($stmt)) {
+                $failed_count = 0;
+                $lockout_level = 0;
+                $lockout_until = null;
+            }
+            mysqli_stmt_close($stmt);
+        }
+    }
 
     $lockout_active = false;
-    if (!empty($lockout_until)) {
+    if (empty($login_error) && !empty($lockout_until)) {
         $lockout_until_dt = new DateTime($lockout_until);
         if ($lockout_until_dt > $now) {
             $lockout_active = true;
@@ -131,11 +147,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         }
     }
 
-    if (!$lockout_active) {
+    if (empty($login_error) && !$lockout_active) {
         // Prepared statement to prevent SQL injection
         $stmt = mysqli_prepare($conn, "
             SELECT user_id, name, email, password, role, date_joined, address, login_token, token_expires_at
-            FROM `sole_source`.`user`
+            FROM `{$db_schema}`.`user`
             WHERE LOWER(TRIM(email)) = LOWER(?)
             ORDER BY user_id DESC
             LIMIT 1
@@ -172,7 +188,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                 // Rehash if algorithm/cost changed (keeps hashes up to date)
                 if (password_needs_rehash($hashed_password, PASSWORD_DEFAULT)) {
                     $new_hash = password_hash($login_password, PASSWORD_DEFAULT);
-                    $stmt_rehash = mysqli_prepare($conn, "UPDATE user SET password = ? WHERE user_id = ?");
+                    $stmt_rehash = mysqli_prepare($conn, "UPDATE `{$db_schema}`.`user` SET password = ? WHERE user_id = ?");
                     if ($stmt_rehash) {
                         mysqli_stmt_bind_param($stmt_rehash, "si", $new_hash, $user_id);
                         mysqli_stmt_execute($stmt_rehash);
@@ -197,7 +213,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                         $new_token = bin2hex(random_bytes(32));
                         $actual_token = $new_token;
                         $stmt_update = mysqli_prepare($conn, "
-                            UPDATE user SET login_token = ?, token_expires_at = DATE_ADD(NOW(), INTERVAL ? DAY) WHERE user_id = ?
+                            UPDATE `{$db_schema}`.`user` SET login_token = ?, token_expires_at = DATE_ADD(NOW(), INTERVAL ? DAY) WHERE user_id = ?
                         ");
                         mysqli_stmt_bind_param($stmt_update, "sii", $new_token, $token_ttl_days, $user_id);
                         mysqli_stmt_execute($stmt_update);
@@ -218,11 +234,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
 
                     // MFA: if enabled, require 6-digit code before completing login
                     $mfa_stmt = mysqli_prepare($conn, "SELECT mfa_enabled FROM user_mfa WHERE user_id = ?");
-                    mysqli_stmt_bind_param($mfa_stmt, "i", $user_id);
-                    mysqli_stmt_execute($mfa_stmt);
-                    mysqli_stmt_bind_result($mfa_stmt, $mfa_enabled);
-                    $has_mfa = mysqli_stmt_fetch($mfa_stmt);
-                    mysqli_stmt_close($mfa_stmt);
+                    $has_mfa = false;
+                    $mfa_enabled = 0;
+                    if ($mfa_stmt) {
+                        mysqli_stmt_bind_param($mfa_stmt, "i", $user_id);
+                        mysqli_stmt_execute($mfa_stmt);
+                        mysqli_stmt_bind_result($mfa_stmt, $mfa_enabled);
+                        $has_mfa = mysqli_stmt_fetch($mfa_stmt);
+                        mysqli_stmt_close($mfa_stmt);
+                    }
 
                     if ($has_mfa && $mfa_enabled) {
                         $_SESSION['pending_mfa_user_id'] = $user_id;
@@ -296,9 +316,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                     SET failed_count = ?, lockout_level = ?, lockout_until = DATE_ADD(NOW(), INTERVAL $lockout_interval_sql)
                     WHERE email = ? AND ip_address = ?
                 ");
-                mysqli_stmt_bind_param($stmt_lock, "iiss", $new_failed_count, $new_lockout_level, $login_email, $ip_address);
-                mysqli_stmt_execute($stmt_lock);
-                mysqli_stmt_close($stmt_lock);
+                if ($stmt_lock) {
+                    mysqli_stmt_bind_param($stmt_lock, "iiss", $new_failed_count, $new_lockout_level, $login_email, $ip_address);
+                    mysqli_stmt_execute($stmt_lock);
+                    mysqli_stmt_close($stmt_lock);
+                }
 
                 $login_error = "Too many failed attempts. Try again in " . format_lockout_remaining($now, $lockout_until_dt) . ".";
                 log_audit(
@@ -316,9 +338,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                     SET failed_count = ?
                     WHERE email = ? AND ip_address = ?
                 ");
-                mysqli_stmt_bind_param($stmt_fail, "iss", $new_failed_count, $login_email, $ip_address);
-                mysqli_stmt_execute($stmt_fail);
-                mysqli_stmt_close($stmt_fail);
+                if ($stmt_fail) {
+                    mysqli_stmt_bind_param($stmt_fail, "iss", $new_failed_count, $login_email, $ip_address);
+                    mysqli_stmt_execute($stmt_fail);
+                    mysqli_stmt_close($stmt_fail);
+                }
                 if ($login_failure_action !== null) {
                     log_audit($conn, null, null, $login_failure_action, "user", null, "email={$login_email}");
                 }
