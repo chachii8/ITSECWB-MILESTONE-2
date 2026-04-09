@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                 foreach ($new_sizes as $ns) {
                     mysqli_stmt_bind_param($stmt_ins, "isi", $product_id, $ns, $add_sizes_stock);
                     if (!mysqli_stmt_execute($stmt_ins)) {
-                        $errorMessage = "Error adding size {$ns}: " . mysqli_error($conn);
+                        $errorMessage = "Error adding size {$ns}: " . htmlspecialchars(mysqli_error($conn), ENT_QUOTES, 'UTF-8');
                         break;
                     }
                 }
@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                 exit();
             }
         } else {
-            $errorMessage = "Error updating product: " . mysqli_error($conn);
+            $errorMessage = "Error updating product: " . htmlspecialchars(mysqli_error($conn), ENT_QUOTES, 'UTF-8');
             mysqli_stmt_close($stmt_update);
         }
         }

@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
         header("Location: delete-item.php?deleted=1");
         exit();
     } else {
-        $errorMessage = "Error deleting product: " . mysqli_error($conn);
+        $errorMessage = "Error deleting product: " . htmlspecialchars(mysqli_error($conn), ENT_QUOTES, 'UTF-8');
     }
     }
     }

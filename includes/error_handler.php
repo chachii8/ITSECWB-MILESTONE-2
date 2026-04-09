@@ -44,9 +44,9 @@ if (!function_exists('app_render_error_page')) {
                 echo "<pre>" . htmlspecialchars($trace, ENT_QUOTES, 'UTF-8') . "</pre>";
             }
         } else {
+            // Production: generic message only. Error ID is still logged server-side (see error_log above).
             echo "<h1>Something went wrong</h1>";
             echo "<p>An unexpected error occurred. Please try again later.</p>";
-            echo "<p>Error ID: " . htmlspecialchars($error_id, ENT_QUOTES, 'UTF-8') . "</p>";
         }
     }
 }

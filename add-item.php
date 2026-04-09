@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     header("Location: add-item.php?added=1");
                     exit();
                 } else {
-                    $errorMessage = "Database error: " . mysqli_error($conn);
+                    $errorMessage = "Database error: " . htmlspecialchars(mysqli_error($conn), ENT_QUOTES, 'UTF-8');
                     mysqli_stmt_close($stmt_product);
                 }
             } else {
@@ -232,9 +232,9 @@ $currencyResult = mysqli_query($conn, $currencyQuery);
 
 <div class="staff-container">
   <h2 class="section-title">Add New Item</h2>
-  <?php if (isset($errorMessage)): ?>
-    <div style="color: red; text-align: center; margin-bottom: 14px;">
-      <?php echo htmlspecialchars($errorMessage ?? '', ENT_QUOTES, 'UTF-8'); ?>
+  <?php if (!empty($errorMessage)): ?>
+    <div class="form-errors" role="alert" style="color: red; text-align: center; margin-bottom: 14px;">
+      <?php echo $errorMessage; ?>
     </div>
   <?php endif; ?>
 

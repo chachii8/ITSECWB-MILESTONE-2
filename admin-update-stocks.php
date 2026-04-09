@@ -222,6 +222,9 @@ while ($sizeRow = mysqli_fetch_assoc($sizeResult)) {
 <!-- Main Content -->
 <div class="staff-container">
   <h2 class="section-title">Update Item Stock</h2>
+  <?php if (!empty($message)): ?>
+    <p style="color:#b00020;text-align:center;font-weight:bold;margin-bottom:1rem;"><?php echo htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></p>
+  <?php endif; ?>
 
   <!-- Display products with dropdown for size and stock -->
   <div class="update-stock-container">

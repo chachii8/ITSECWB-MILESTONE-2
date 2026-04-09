@@ -115,7 +115,7 @@ Admin and staff protected pages now redirect to `login-admin.php` when not logge
 
 ## 11. Error pages (`APP_DEBUG`)
 
-Uncaught exceptions show a **detailed** page (message, file, line, stack trace) when **`APP_DEBUG`** is true, and a **generic** page with an error id when false (`includes/error_handler.php`).
+Uncaught exceptions show a **detailed** page (error id, message, file, line, stack trace) when **`APP_DEBUG`** is true, and a **generic** page with **no error id** when false (`includes/error_handler.php`). The error id is still **logged server-side** in both cases.
 
 **Toggle:**
 
@@ -133,7 +133,7 @@ Restart Apache or PHP-FPM after changing env vars if your stack caches them.
 2. Use **`error_test.php`** at the project root (included in `.gitignore` so it is not committed). It throws a test exception after loading `security_config.php`. If the file is missing, create it with the two-line body: `require_once` of `config/security_config.php` and `throw new RuntimeException(...)`.
 3. Open **`https://localhost/itdbadm/error_test.php`** (adjust path to match your XAMPP URL). You should see **Application Error** with message, file, line, and **Stack Trace**.
 4. **Turn debug off** (unset `APP_DEBUG` or set `false`).
-5. Reload the same URL. You should see **Something went wrong** with a generic message and an **Error ID** only (no stack trace).
+5. Reload the same URL. You should see **Something went wrong** with a generic message only (**no** error id or stack trace on the page).
 6. **Delete `error_test.php`** when done so it cannot be used on a public server.
 
 The same exception is still written to the **PHP error log** (with stack trace) in both cases.

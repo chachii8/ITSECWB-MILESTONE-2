@@ -8,7 +8,7 @@ require_once 'includes/password_policy.php';
 require_once 'includes/captcha.php';
 require_once 'file_upload_validation.php';
 
-$success_message = "";
+$signup_success = false;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['signup'])) {
     if (!validate_csrf()) {
@@ -138,9 +138,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['signup'])) {
         mysqli_stmt_bind_param($stmt, "ssssssss", $fullname, $email, $phone, $hashed_password, $role, $date_joined, $address, $profile_photo);
 
         if (mysqli_stmt_execute($stmt)) {
-            $success_message = "<p class='success-message'>Account created successfully! You can <a href='login.php'>login</a>.</p>";
+            $signup_success = true;
         } else {
-            $error_message = "<p class='error-message'>Error: " . $conn->error . "</p>";
+            $error_message = "<p class='error-message'>Error: " . htmlspecialchars(mysqli_error($conn), ENT_QUOTES, 'UTF-8') . "</p>";
         }
 
         mysqli_stmt_close($stmt);
@@ -166,11 +166,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['signup'])) {
     <h1>Join Sole Source</h1>
     <h2>Sign up for a Sole Source account and gain access to exclusive features and rewards.</h2>
 
-    <!-- Display success or error messages -->
+    <!-- Display success or error messages (HTML built server-side; do not escape whole blocks or tags show as text) -->
     <?php if (!empty($error_message)): ?>
-        <?php echo htmlspecialchars($error_message ?? '', ENT_QUOTES, 'UTF-8'); ?>
-    <?php elseif (!empty($success_message)): ?>
-        <?php echo htmlspecialchars($success_message ?? '', ENT_QUOTES, 'UTF-8'); ?>
+        <?php echo $error_message; ?>
+    <?php elseif ($signup_success): ?>
+        <p class="success-message">Account created successfully! You can <a href="login.php">login</a>.</p>
     <?php endif; ?>
 
     <form class="signup-form" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data">

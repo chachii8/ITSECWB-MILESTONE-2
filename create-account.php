@@ -12,7 +12,8 @@ if (!isset($_SESSION["role"]) || $_SESSION["role"] != "Admin") {
     header("Location: login-admin.php"); // Admin/Staff use admin login
     exit();
 }
-$success_message = "";
+$account_created_success = false;
+$account_created_role = "";
 $error_message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -145,9 +146,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         mysqli_stmt_bind_param($stmt, "ssssssss", $fullname, $email, $phone, $hashed_password, $role, $date_joined, $address, $profile_photo);
 
         if (mysqli_stmt_execute($stmt)) {
-            $success_message = "<p class='success-message'>Account created successfully for {$role}. The user is now registered!</p>";
+            $account_created_success = true;
+            $account_created_role = $role;
         } else {
-            $error_message = "<p class='error-message'>Error: " . $conn->error . "</p>";
+            $error_message = "<p class='error-message'>Error: " . htmlspecialchars(mysqli_error($conn), ENT_QUOTES, 'UTF-8') . "</p>";
         }
 
         mysqli_stmt_close($stmt);
@@ -179,11 +181,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <h1>Create Account</h1>
     <h2>Fill out the form below to register a new Admin or Staff account.</h2>
 
-    <!-- Display success or error messages -->
+    <!-- Display success or error messages (HTML from server; escaping full string hid markup from users) -->
     <?php if (!empty($error_message)): ?>
-        <?php echo htmlspecialchars($error_message ?? '', ENT_QUOTES, 'UTF-8'); ?>
-    <?php elseif (!empty($success_message)): ?>
-        <?php echo htmlspecialchars($success_message ?? '', ENT_QUOTES, 'UTF-8'); ?>
+        <?php echo $error_message; ?>
+    <?php elseif ($account_created_success): ?>
+        <p class="success-message">Account created successfully for <?php echo htmlspecialchars($account_created_role, ENT_QUOTES, 'UTF-8'); ?>. The user is now registered!</p>
     <?php endif; ?>
 
     <!-- Form to create new Admin/Staff account -->

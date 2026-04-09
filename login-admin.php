@@ -251,7 +251,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                 }
             } else {
                 mysqli_stmt_close($stmt);
-                $login_error = "No admin or staff account found.";
+                $login_error = "Invalid credentials.";
                 $login_failure_action = "LOGIN_NO_ACCOUNT";
             }
 
