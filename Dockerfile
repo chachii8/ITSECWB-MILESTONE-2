@@ -1,4 +1,5 @@
-FROM php:8.2-apache
+# Pin OS for reproducible Apache module layout (Bookworm)
+FROM php:8.2-apache-bookworm
 
 # Install MySQLi extension
 RUN docker-php-ext-install mysqli
@@ -6,12 +7,17 @@ RUN docker-php-ext-install mysqli
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# PHP + mod_php requires mpm_prefork. Newer base images may enable mpm_event too,
-# which causes: AH00534 "More than one MPM loaded" and crash loops.
+# mod_php requires mpm_prefork only. Remove duplicate MPM symlinks (build-time guard).
+# Entrypoint repeats this at runtime for hosts where build cache skipped the fix.
 RUN set -eux; \
     a2dismod mpm_event 2>/dev/null || true; \
     a2dismod mpm_worker 2>/dev/null || true; \
-    a2enmod mpm_prefork
+    rm -f /etc/apache2/mods-enabled/mpm_event.load \
+          /etc/apache2/mods-enabled/mpm_event.conf \
+          /etc/apache2/mods-enabled/mpm_worker.load \
+          /etc/apache2/mods-enabled/mpm_worker.conf 2>/dev/null || true; \
+    a2enmod mpm_prefork; \
+    ls -la /etc/apache2/mods-enabled/mpm_* || true
 
 # Copy application files
 COPY . /var/www/html/

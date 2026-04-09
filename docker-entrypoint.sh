@@ -1,7 +1,13 @@
 #!/bin/bash
 set -e
 
-# Render expects apps to listen on PORT (default 10000)
+# Only one Apache MPM may be active. php:apache uses mod_php → mpm_prefork.
+# Some hosts still leave mpm_event enabled → AH00534 crash loop. Fix at runtime (Railway/Render).
+a2dismod mpm_event 2>/dev/null || true
+a2dismod mpm_worker 2>/dev/null || true
+a2enmod mpm_prefork 2>/dev/null || true
+
+# Render / Railway expect apps to listen on PORT (default 80 locally)
 PORT="${PORT:-80}"
 
 # Configure Apache to listen on PORT
