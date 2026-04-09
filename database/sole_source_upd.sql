@@ -17,6 +17,9 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
+-- Aiven / managed MySQL: allow CREATE TABLE before ALTER ADD PRIMARY KEY (phpMyAdmin dump style)
+SET SESSION sql_require_primary_key = 0;
+
 --
 -- Database: `sole_source`
 --
@@ -25,7 +28,12 @@ DELIMITER $$
 --
 -- Procedures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `add_to_cart` (IN `p_user_id` INT, IN `p_product_id` INT, IN `p_size` VARCHAR(10), IN `p_quantity` INT)   BEGIN
+DROP PROCEDURE IF EXISTS `add_to_cart`$$
+DROP PROCEDURE IF EXISTS `DeleteUserAndOrders`$$
+DROP PROCEDURE IF EXISTS `place_order`$$
+DROP PROCEDURE IF EXISTS `SubmitReview`$$
+
+CREATE PROCEDURE `add_to_cart` (IN `p_user_id` INT, IN `p_product_id` INT, IN `p_size` VARCHAR(10), IN `p_quantity` INT)   BEGIN
     DECLARE existing_id INT;
 
     SELECT cart_id INTO existing_id
@@ -44,7 +52,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `add_to_cart` (IN `p_user_id` INT, I
     END IF;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `DeleteUserAndOrders` (IN `p_user_id` INT)   BEGIN
+CREATE PROCEDURE `DeleteUserAndOrders` (IN `p_user_id` INT)   BEGIN
     -- Delete all orders associated with the user
     DELETE FROM order_details WHERE order_id IN (SELECT order_id FROM `order` WHERE user_id = p_user_id);
     DELETE FROM `order` WHERE user_id = p_user_id;
@@ -53,7 +61,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `DeleteUserAndOrders` (IN `p_user_id
     DELETE FROM user WHERE user_id = p_user_id;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `place_order` (IN `p_user_id` INT, IN `p_total_price` DECIMAL(7,2), IN `p_shipping_address` VARCHAR(255))   BEGIN
+CREATE PROCEDURE `place_order` (IN `p_user_id` INT, IN `p_total_price` DECIMAL(7,2), IN `p_shipping_address` VARCHAR(255))   BEGIN
     DECLARE last_order_id INT;
     DECLARE done INT DEFAULT FALSE;
     DECLARE v_product_id INT;
@@ -137,7 +145,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `place_order` (IN `p_user_id` INT, I
     COMMIT;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `SubmitReview` (IN `p_user_id` INT, IN `p_order_id` INT, IN `p_product_id` INT, IN `p_rating` INT, IN `p_review` TEXT, IN `p_date` DATE)   BEGIN
+CREATE PROCEDURE `SubmitReview` (IN `p_user_id` INT, IN `p_order_id` INT, IN `p_product_id` INT, IN `p_rating` INT, IN `p_review` TEXT, IN `p_date` DATE)   BEGIN
     DECLARE review_count INT;
 
     SELECT COUNT(*) INTO review_count
