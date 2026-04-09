@@ -4,11 +4,23 @@
  * Anti-brute-force and authentication settings
  */
 
+// Optional local overrides (see local_security_config.php.example). Not for production commits.
+if (is_file(__DIR__ . '/local_security_config.php')) {
+    require __DIR__ . '/local_security_config.php';
+}
+
 // Debug mode:
 // - true: detailed error messages with stack trace
 // - false: generic error message only
+// Toggle: env APP_DEBUG=true|false, or define in local_security_config.php, or edit below.
 if (!defined('APP_DEBUG')) {
-    define('APP_DEBUG', false);
+    $ad = getenv('APP_DEBUG');
+    if ($ad === false || $ad === '') {
+        define('APP_DEBUG', false);
+    } else {
+        $lv = strtolower(trim((string) $ad));
+        define('APP_DEBUG', in_array($lv, ['1', 'true', 'yes', 'on'], true));
+    }
 }
 
 // Session inactivity timeout in seconds (15 minutes)
@@ -44,12 +56,24 @@ define('CAPTCHA_AFTER_FAILED_ATTEMPTS', 1);
 define('RECAPTCHA_SITE_KEY', getenv('RECAPTCHA_SITE_KEY') ?: '6LcvgWQsAAAAAJDc_OxeOSU_nkNIOkMBJYh-Lk0E');
 define('RECAPTCHA_SECRET_KEY', getenv('RECAPTCHA_SECRET_KEY') ?: '6LcvgWQsAAAAAJ0j9HfFiZ8W2b44zGslCMaS_-o0');
 
-// Audit log: syslog integration - send logs to another system
-// Set to true to use PHP syslog() (sends to local syslog daemon; daemon can forward to remote)
-define('AUDIT_USE_SYSLOG', true);
-// Remote syslog: set host (and optional :port) to send UDP syslog to another server
-// Example: 'logserver.example.com' or '192.168.1.100:514' (default port 514)
-define('AUDIT_SYSLOG_REMOTE', '');
+// Audit log — works on shared hosting: file + DB always; syslog is optional.
+// Env overrides (Render/production): AUDIT_USE_SYSLOG=true, AUDIT_SYSLOG_REMOTE=host:514, AUDIT_LOG_DIR=/path
+if (!defined('AUDIT_USE_SYSLOG')) {
+    $v = getenv('AUDIT_USE_SYSLOG');
+    if ($v === false || $v === '') {
+        define('AUDIT_USE_SYSLOG', false);
+    } else {
+        $lv = strtolower(trim((string) $v));
+        define('AUDIT_USE_SYSLOG', in_array($lv, ['1', 'true', 'yes', 'on'], true));
+    }
+}
+if (!defined('AUDIT_SYSLOG_REMOTE')) {
+    define('AUDIT_SYSLOG_REMOTE', getenv('AUDIT_SYSLOG_REMOTE') !== false ? trim((string) getenv('AUDIT_SYSLOG_REMOTE')) : '');
+}
+if (!defined('AUDIT_LOG_DIR')) {
+    $d = getenv('AUDIT_LOG_DIR');
+    define('AUDIT_LOG_DIR', ($d !== false && $d !== '') ? trim((string) $d) : '');
+}
 
 require_once __DIR__ . '/../includes/error_handler.php';
 init_app_error_handler();

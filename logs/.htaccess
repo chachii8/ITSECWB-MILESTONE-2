@@ -1,5 +1,8 @@
 # Block direct HTTP access to log files.
 # PHP (file_put_contents, etc.) can still write — this only applies to browser/URL requests.
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
 <IfModule mod_authz_core.c>
     Require all denied
 </IfModule>

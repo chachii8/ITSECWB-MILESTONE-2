@@ -4,6 +4,7 @@ require_once 'includes/db.php';
     require_once 'includes/session_init.php';
     require_once 'includes/csrf.php';
     require_once 'includes/no_cache_headers.php';
+    require_once 'includes/input_validation.php';
 
     // Check if the user is logged in and has the correct role
     if (!isset($_SESSION["role"]) || $_SESSION["role"] != "Customer") {
@@ -62,10 +63,10 @@ require_once 'includes/db.php';
             $error = "Security check failed. Please try again.";
         } else {
         $rating = isset($_POST["rating"]) ? intval($_POST["rating"]) : 0;
-        $comment = trim($_POST["comment"]);
+        $comment = sanitize_review_text($_POST['comment'] ?? '', 255);
         $date = date("Y-m-d");
 
-        if ($rating < 1 || $rating > 5 || empty($comment)) {
+        if ($rating < 1 || $rating > 5 || $comment === '') {
             $error = "Please provide a valid rating and comment.";
         } elseif (!$order_owns) {
             $error = "Order not found or you do not have permission to review this item.";
@@ -225,7 +226,7 @@ require_once 'includes/db.php';
       </div>
 
       <label for="comment">Your Review:</label>
-      <textarea name="comment" id="comment" rows="5" placeholder="Share your experience..."></textarea>
+      <textarea name="comment" id="comment" rows="5" maxlength="255" placeholder="Share your experience... (plain text, max 255 characters)"></textarea>
 
       <button type="submit">Submit Review</button>
     </form>

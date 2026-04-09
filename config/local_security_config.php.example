@@ -1,0 +1,20 @@
+<?php
+/**
+ * Copy to local_security_config.php (same folder) for local-only settings.
+ * That file is gitignored — use it to test remote syslog without deploying.
+ *
+ * 1. Copy: cp local_security_config.php.example local_security_config.php
+ * 2. In another terminal listen on standard syslog UDP port (requires sudo):
+ *      sudo nc -u -l 514
+ *    (No sudo: use a high port and set AUDIT_SYSLOG_REMOTE to 127.0.0.1:5514 with nc -u -l 5514)
+ * 3. Trigger an audit event (login, logout, etc.) and watch nc output.
+ *
+ * Optional: toggle detailed error pages (stack traces) for local dev:
+ *   if (!defined('APP_DEBUG')) { define('APP_DEBUG', true); }
+ */
+if (!defined('APP_DEBUG')) {
+    define('APP_DEBUG', false);
+}
+if (!defined('AUDIT_SYSLOG_REMOTE')) {
+    define('AUDIT_SYSLOG_REMOTE', '127.0.0.1:514');
+}

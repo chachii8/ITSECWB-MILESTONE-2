@@ -74,7 +74,35 @@ Adjust in `config/security_config.php` if needed.
 
 Admin and staff protected pages now redirect to `login-admin.php` when not logged in. Customer pages redirect to `login.php`.
 
-## 7. SQL Injection Protection
+## 7. HTTPS (TLS)
+
+**HTTPS is provided by the web server or hosting platform**, not by PHP. The application:
+
+- Sets the session cookie **`Secure`** when the request is over HTTPS (`includes/https.php` → `request_is_https()`).
+- Sends **`Strict-Transport-Security`** (HSTS) when HTTPS is detected (`includes/security_headers.php`).
+- Behind a **reverse proxy** (e.g. Render) that terminates TLS, set **`TRUST_PROXY_HEADERS=1`** in the environment so `HTTP_X_FORWARDED_PROTO=https` is trusted for cookie flags and HSTS.
+
+### Local / rubric: self-signed certificate (acceptable)
+
+1. **Enable SSL in Apache (XAMPP)**  
+   - Edit `httpd-ssl.conf` (paths vary; often `xamppfiles/apache/conf/extra/httpd-ssl.conf`).  
+   - Ensure `SSLCertificateFile` and `SSLCertificateKeyFile` point to your cert and key.
+
+2. **Generate a self-signed cert** (example with OpenSSL):
+
+   ```bash
+   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+     -keyout localhost.key -out localhost.crt \
+     -subj "/CN=localhost"
+   ```
+
+   Point Apache’s `SSLCertificateFile` / `SSLCertificateKeyFile` to `localhost.crt` and `localhost.key`, enable `httpd-ssl.conf` in `httpd.conf`, restart Apache, and open **`https://localhost/...`**. The browser will show a warning once; accept it for development (self-signed is acceptable for many course rubrics).
+
+3. **Access the site with `https://`** so cookies get the `Secure` flag and HSTS applies.
+
+---
+
+## 8. SQL Injection Protection
 
 **Keep using prepared statements for all new queries.**
 
@@ -84,7 +112,7 @@ Admin and staff protected pages now redirect to `login-admin.php` when not logge
 - Validation helpers: `validate_int_range()`, `sanitize_string()`, `validate_size()`, `validate_order_direction()` in `includes/input_validation.php`—use these before binding.
 - Static queries (no user input) may use `mysqli_query()`; when in doubt, use prepared statements.
 
-## 8. XSS (Cross-Site Scripting) Protection
+## 9. XSS (Cross-Site Scripting) Protection
 
 **Escape all output that may contain user or database content.**
 
@@ -93,7 +121,7 @@ Admin and staff protected pages now redirect to `login-admin.php` when not logge
 - For HTML attributes and JavaScript strings, `ENT_QUOTES` is required to escape single and double quotes.
 - Helper: `h($s)` in `includes/input_validation.php` wraps `htmlspecialchars` for convenience.
 
-## 9. CSRF (Cross-Site Request Forgery) Protection
+## 10. CSRF (Cross-Site Request Forgery) Protection
 
 **All state-changing POST requests must validate a CSRF token.**
 
@@ -102,3 +130,28 @@ Admin and staff protected pages now redirect to `login-admin.php` when not logge
 - **POST handlers**: Call `validate_csrf()` at the start of any handler that processes POST data. If it returns false, reject the request with an error message.
 - **AJAX (fetch)**: For endpoints like `set_currency.php` and `add_to_favorites.php`, include a `<meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">` in the page head, and send `csrf_token` in the POST body from JavaScript.
 - **SameSite cookie**: Session cookies use `SameSite=Strict` via `includes/session_init.php`. Use `require_once 'includes/session_init.php'` instead of `session_start()` so cookie params are set before the session starts.
+
+## 11. Error pages (`APP_DEBUG`)
+
+Uncaught exceptions show a **detailed** page (message, file, line, stack trace) when **`APP_DEBUG`** is true, and a **generic** page with an error id when false (`includes/error_handler.php`).
+
+**Toggle:**
+
+| Method | On | Off |
+|--------|----|-----|
+| **Environment** | `APP_DEBUG=true` (or `1`, `yes`, `on`) | `APP_DEBUG=false` or unset |
+| **Config file** | In `config/security_config.php`, use `define('APP_DEBUG', true);` | `define('APP_DEBUG', false);` |
+| **Local only** | In gitignored `config/local_security_config.php`: `define('APP_DEBUG', true);` | Remove that line or set `false` |
+
+Restart Apache or PHP-FPM after changing env vars if your stack caches them.
+
+**How to test:**
+
+1. **Turn debug on** (`APP_DEBUG=true` in env, or `define('APP_DEBUG', true);` in `config/local_security_config.php`).
+2. Use **`error_test.php`** at the project root (included in `.gitignore` so it is not committed). It throws a test exception after loading `security_config.php`. If the file is missing, create it with the two-line body: `require_once` of `config/security_config.php` and `throw new RuntimeException(...)`.
+3. Open **`https://localhost/itdbadm/error_test.php`** (adjust path to match your XAMPP URL). You should see **Application Error** with message, file, line, and **Stack Trace**.
+4. **Turn debug off** (unset `APP_DEBUG` or set `false`).
+5. Reload the same URL. You should see **Something went wrong** with a generic message and an **Error ID** only (no stack trace).
+6. **Delete `error_test.php`** when done so it cannot be used on a public server.
+
+The same exception is still written to the **PHP error log** (with stack trace) in both cases.

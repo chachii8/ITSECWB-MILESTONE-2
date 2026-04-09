@@ -182,7 +182,7 @@ if ($result) {
 
 <div class="staff-container">
   <h2 class="section-title">Audit Log</h2>
-  <p class="audit-summary">Authentication, transactions, and administrative actions for Customers, Staff, and Admins. Logs are written to the database, <code>logs/audit.log</code>, and optionally to syslog (local or remote via <code>config/security_config.php</code>).</p>
+  <p class="audit-summary">Authentication, transactions, and administrative actions for Customers, Staff, and Admins. Logs are written to the database, append-only <code>logs/audit.log</code> (or <code>AUDIT_LOG_DIR</code>), and optionally to syslog: set env vars <code>AUDIT_USE_SYSLOG</code>, <code>AUDIT_SYSLOG_REMOTE</code> (see <code>docs/AUDIT_LOGGING.md</code>).</p>
 
   <form method="get" action="view-audit-log.php" class="audit-filters">
     <label>Role:</label>

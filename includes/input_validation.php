@@ -81,6 +81,24 @@ function sanitize_string($value, $max_len = 255) {
     return $s;
 }
 
+/**
+ * Review/comment text: plain text only (no HTML/script). Strips tags, null bytes, enforces max length.
+ * Always escape with htmlspecialchars() (or h()) when outputting in HTML.
+ */
+function sanitize_review_text($value, $max_len = 255) {
+    $s = trim((string) $value);
+    $s = strip_tags($s);
+    $s = str_replace("\0", '', $s);
+    if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+        if (mb_strlen($s, 'UTF-8') > $max_len) {
+            $s = mb_substr($s, 0, $max_len, 'UTF-8');
+        }
+    } elseif (strlen($s) > $max_len) {
+        $s = substr($s, 0, $max_len);
+    }
+    return $s;
+}
+
 /** Validate size format (e.g. 6, 6.5, 7). */
 function validate_size($value) {
     if (!is_numeric($value)) return false;
